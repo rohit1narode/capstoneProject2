@@ -1,24 +1,41 @@
-name: CI
+name: Run Cypress Tests
 
-on: 
+on:
   push:
+    branches:
+      - main  # Trigger on push to the 'main' branch
   pull_request:
+    branches:
+      - main  # Trigger on pull requests to the 'main' branch
 
 jobs:
-  build:
+  cypress-run:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20' # Updated to match your Node.js version
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'  # Use the Node.js version you're working with
 
-      - name: Install dependencies
-        run: npm install cypress --save-dev
+    - name: Install dependencies
+      run: npm install
 
-      - name: Run Cypress tests
-        run: npx cypress run
+    - name: Install Cypress
+      run: npm install cypress --save-dev
+
+    - name: Set executable permission for Cypress
+      run: chmod +x ./node_modules/.bin/cypress
+
+    - name: Run Cypress tests
+      run: npx cypress run
+
+    - name: Upload Cypress artifacts
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: cypress-screenshots
+        path: cypress/screenshots/
